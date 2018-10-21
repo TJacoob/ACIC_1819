@@ -6,6 +6,7 @@ const int pinPoten = A3;
 // Constants
 const int errorMargin = 1.1;
 const float roomTemp = 26.0;
+const int samples = 5;
 int ledSpeed = 500;
 
 // Last Values Sampled
@@ -45,11 +46,14 @@ void loop() {
 
 // Temperature Functions
 void temperatureSensor() {
-  int sensorVal = analogRead(pinTemp);   // Read Pin
+  int sensorAvg = 0;
+  for ( int i=0; i<samples; i++)
+    sensorAvg += analogRead(pinTemp);   // Read Pin
+  int sensorVal = sensorAvg/samples;
   lastTemp = sensorVal;   // Store value to check for changes in the loop
-  float temperature =  (((sensorVal/1024.0)*5.0)-0.5)*100; // Data Conversion
-  //Serial.print("Temperature: ");
-  //Serial.println(temperature);
+  float temperature =  (((sensorVal/1024.0)*5.0)-0.508)*100; // Data Conversion
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
   if (temperature >= roomTemp) 
     digitalWrite(4, HIGH);
   else
@@ -58,7 +62,10 @@ void temperatureSensor() {
 
 // Potentiometer Functions
 void potentiometer(){
-  int potenVal = analogRead(pinPoten);
+  int sensorAvg = 0;
+  for ( int i=0; i<samples; i++)
+    sensorAvg += analogRead(pinPoten);   // Read Pin
+  int potenVal = sensorAvg/samples;
   lastPoten = potenVal; // Store value to check for changes in the loop
   //Serial.print("Potence: ");
   //Serial.println(potenVal);
@@ -78,9 +85,14 @@ void ledBlink(){ // Blink the LED
 
 // Light Functions
 void lightSensor(){
-  int sensorLight = analogRead(pinLight);   // Read the Pin
+  int sensorAvg = 0;
+  for ( int i=0; i<samples; i++)
+    sensorAvg += analogRead(pinLight);   // Read Pin
+  int sensorLight = sensorAvg/samples;
+  Serial.print("Sensor Light: ");
+  Serial.println(sensorLight);
+  lastLight = sensorLight;      // Store value to check for changes in the loop
   int light = sensorLight / 4;    // Transform from 1024 to 255
-  lastLight = light;      // Store value to check for changes in the loop
   Serial.print("light: ");
   Serial.println(255-light);
   //analogWrite(8, 255-light);   // R
