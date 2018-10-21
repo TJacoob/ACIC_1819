@@ -7,10 +7,11 @@ const int pinLight = A1;
 const int pinPoten = A3;
 
 // Constants
-const int errorMargin = 2;
+const int errorMargin = 1.2;
 const float roomTemp = 26.0;
 const int samples = 5;
 int ledSpeed = 500;
+int light = 0;
 
 // Last Values Sampled
 // The goal is to only run the data handling when there is a new value in the pin
@@ -45,19 +46,21 @@ void loop() {
   if ( analogRead(pinTemp) < (lastTemp-errorMargin) || analogRead(pinTemp) > (lastTemp+errorMargin) )
   {
     temperatureSensor();
-    
-    Serial.print(temperature);
-    Wire.beginTransmission(8);
-    Wire.write(temperature);  
-    Wire.endTransmission(8);
+    sendData();
   }
   // Potentiometer
-  //if ( analogRead(pinPoten) < (lastPoten-errorMargin) || analogRead(pinPoten) > (lastPoten+errorMargin) )
-    //potentiometer();
+  if ( analogRead(pinPoten) < (lastPoten-errorMargin) || analogRead(pinPoten) > (lastPoten+errorMargin) )
+  {
+    potentiometer();
+    sendData();
+  }
   //ledBlink();
   // Light Sensor
-  //if ( analogRead(pinLight) < (lastLight-errorMargin) || analogRead(pinLight) > (lastLight+errorMargin) )
-    //lightSensor();
+  if ( analogRead(pinLight) < (lastLight-errorMargin) || analogRead(pinLight) > (lastLight+errorMargin) )
+  {
+    lightSensor();
+    sendData();
+  }
   
 }
 
@@ -106,13 +109,26 @@ void lightSensor(){
   for ( int i=0; i<samples; i++)
     sensorAvg += analogRead(pinLight);   // Read Pin
   int sensorLight = sensorAvg/samples;
-  Serial.print("Sensor Light: ");
-  Serial.println(sensorLight);
+  //Serial.print("Sensor Light: ");
+  //Serial.println(sensorLight);
   lastLight = sensorLight;      // Store value to check for changes in the loop
-  int light = sensorLight / 4;    // Transform from 1024 to 255
-  Serial.print("light: ");
-  Serial.println(255-light);
+  light = sensorLight / 4;    // Transform from 1024 to 255
+  //Serial.print("light: ");
+  //Serial.println(255-light);
   //analogWrite(8, 255-light);   // R
   //analogWrite(9, 255-light);   // G
   analogWrite(10, 255-light);    // B
+}
+
+void sendData(){
+  Wire.beginTransmission(8);
+  Wire.write(temperature);
+  Wire.write(light); 
+  //Wire.write(ledSpeed);
+  int ledSpeed1 = int(ledSpeed/100);
+  int ledSpeed2 = ledSpeed%100;
+  Wire.write(ledSpeed1);
+  Wire.write(ledSpeed2);
+  
+  Wire.endTransmission();
 }
