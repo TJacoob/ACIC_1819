@@ -1,5 +1,7 @@
 // Includes
 #include <Wire.h>
+#include <stdio.h>
+#include <string.h>
 
 // Constants
 const float roomTemp = 28.0;
@@ -30,29 +32,32 @@ void loop() {
 
 void receiveData(int i){
   while(1<=Wire.available()){
-    float temp = Wire.read();
-    if ( temp < (temperature-errorMargin) || temp > (temperature+errorMargin) )
+    char type = Wire.read();
+    if ( type == 'T' )
     {
-     temperature = temp;
-     temperatureAction();
+      int temp = Wire.read();  
+      temperature = temp;
+      Serial.println(temperature);
+      temperatureAction();
     }
-    int li = Wire.read();
-    if ( li != light )
+    if ( type == 'L' )
     {
-      light = li; 
+      int temp = Wire.read();  
+      light = temp;
+      Serial.println(light);
       lightAction();
     }
-    int led1 = Wire.read();
-    int led2 = Wire.read();
-    int led = led1*100+led2;
-    if ( led != ledSpeed )
-      ledSpeed = led;
-    delay(ledSpeed);
-    
+    if ( type == 'P' )
+    {
+      int l1 = Wire.read();
+      int l2 = Wire.read();  
+      ledSpeed = l1*100+l2;
+      Serial.println(ledSpeed);
+    }
   }
-  Serial.println(temperature);
-  Serial.println(ledSpeed);
-  Serial.println(light);
+  //Serial.println(temperature);
+  //Serial.println(ledSpeed);
+  //Serial.println(light);
   Serial.println("--------------");
 }
 
