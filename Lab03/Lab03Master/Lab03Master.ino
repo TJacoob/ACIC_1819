@@ -1,5 +1,6 @@
 // Includes
 #include <Wire.h>
+#include <time.h>
 
 // Pins
 const int pinTemp = A0;
@@ -12,6 +13,7 @@ const float roomTemp = 26.0;
 const int samples = 5;
 int ledSpeed = 500;
 int light = 0;
+int oldTime = 0;
 
 // Last Values Sampled
 // The goal is to only run the data handling when there is a new value in the pin
@@ -40,7 +42,10 @@ void setup() {
 void loop() {
   // Round-Robin Architecture
   // Communications
-  
+
+  time_t send_t = millis();
+  //Serial.println(send_t);
+  Wire.requestFrom(8, 3);    // request 3 bytes from slave device #8
  
   // Temperature
   if ( analogRead(pinTemp) < (lastTemp-errorMargin) || analogRead(pinTemp) > (lastTemp+errorMargin) )
@@ -67,6 +72,9 @@ void loop() {
     lightSensor();
     sendLightData();
   }
+
+  time_t receive_t = millis();
+  Serial.println( receive_t-send_t );
   
 }
 

@@ -4,8 +4,9 @@
 #include <string.h>
 
 // Constants
-const float roomTemp = 28.0;
+const float roomTemp = 26.0;
 const int errorMargin = 1.1;
+char t[10]; //empty array where to put the numbers going to the master
 
 float temperature = 0;
 int ledSpeed = 500;
@@ -16,6 +17,7 @@ void setup() {
   // Communications
   Wire.begin(8);
   Wire.onReceive(receiveData);
+  Wire.onRequest(requestEvent);
 
   // Temperature LED
   pinMode(4, OUTPUT);
@@ -78,4 +80,8 @@ void ledBlink(){ // Blink the LED
   delay(ledSpeed);
   digitalWrite(2, HIGH);
   delay(ledSpeed);
+}
+
+void requestEvent() {
+  Wire.write(t); 
 }
