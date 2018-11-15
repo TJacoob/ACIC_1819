@@ -1,19 +1,22 @@
 // Pins
-const int cellRightLed = 3;
-const int cellRightButton = 2;
-const int cellLeftLed = 11;
-const int cellLeftButton = 10;
+const int cellRLed = 3;
+const int cellRButton = 2;
+const int cellLLed = 11;
+const int cellLButton = 10;
 const int lightSensor = A0;
 
 // Consts
-const int waitPeriod = 3000;
+const int waitPeriod = 10000;
 
 // Variables
-int brightness = 0;
-int buttonState = 0;
-int lastButtonState = 0;
-boolean movement = false;
-long movementDetected = 0;
+int brightnessR = 0;
+int brightnessL = 0;
+int lastButtonStateR = 0;
+int lastButtonStateL = 0;
+boolean movementR = false;
+long movementDetectedR = 0;
+boolean movementL = false;
+long movementDetectedL = 0;
 /*
 int fadeAmount = 5;
 
@@ -23,50 +26,80 @@ int buttonPushCounter = 0;
 */
 
 void setup() {
-  pinMode(cellRightLed,OUTPUT);
-  pinMode(cellRightButton,OUTPUT);
-  pinMode(cellLeftLed,OUTPUT);
-  pinMode(cellLeftButton,OUTPUT);
+  pinMode(cellRLed,OUTPUT);
+  pinMode(cellRButton,OUTPUT);
+  pinMode(cellLLed,OUTPUT);
+  pinMode(cellLButton,OUTPUT);
   Serial.begin(9600);
 }
 
 void loop() {
-  if( movement )
+  if( movementR )
   {
-    if(millis()-movementDetected > waitPeriod)
-      movement = false;
+    if(millis()-movementDetectedR > waitPeriod)
+      movementR = false;
+      brightnessR = 255;
   }
-  else
+  if( movementL )
   {
-    brightnessSensor();
-    //ReceberCommunicações()
-    motionSensor();
+    if(millis()-movementDetectedL > waitPeriod)
+      movementL = false;
+      brightnessL = 255;
   }
+
   //EnviarComunicações()
-  analogWrite(cellRightLed, brightness);
+  analogWrite(cellRLed, brightnessR);
+  analogWrite(cellLLed, brightnessL);
+  
+  brightnessSensor();
+  //ReceberCommunicações()
+  motionSensorR();
+  motionSensorL();
+  
+  
 }
 
-void motionSensor(){
-  buttonState = digitalRead(cellRightButton);
+void motionSensorR(){
+  int buttonState = digitalRead(cellRButton);
   // compare the buttonState to its previous state
-  if (buttonState != lastButtonState) {
+  if (buttonState != lastButtonStateR) {
     // if the state has changed, increment the counter
     if (buttonState == HIGH) {
-      brightness = 255;
-      movement = true;
-      movementDetected = millis();
+      brightnessR = 255;
+      movementR = true;
+      movementDetectedR = millis();
     }
     // Delay a little bit to avoid bouncing
     delay(50);
   }
   // save the current state as the last state, for next time through the loop
-  lastButtonState = buttonState;
+  lastButtonStateR = buttonState;
+}
+
+void motionSensorL(){
+  int buttonState = digitalRead(cellLButton);
+  // compare the buttonState to its previous state
+  if (buttonState != lastButtonStateL) {
+    // if the state has changed, increment the counter
+    if (buttonState == HIGH) {
+      brightnessL = 255;
+      movementL = true;
+      movementDetectedL = millis();
+    }
+    // Delay a little bit to avoid bouncing
+    delay(50);
+  }
+  // save the current state as the last state, for next time through the loop
+  lastButtonStateL = buttonState;
 }
 
 void brightnessSensor()
 {
-  brightness = 255-(analogRead(lightSensor)/4);
-  if ( brightness > 64 )
-    brightness = 64;
+  brightnessR = 255-(analogRead(lightSensor)/4);
+  if ( brightnessR > 64 )
+    brightnessR = 64;
+  brightnessL = 255-(analogRead(lightSensor)/4);
+  if ( brightnessL > 64 )
+    brightnessL = 64;
   //Serial.println(brightness);
 }
