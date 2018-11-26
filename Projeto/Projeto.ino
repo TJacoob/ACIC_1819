@@ -1,3 +1,5 @@
+#include <Wire.h>
+
 // Pins
 const int cellRLed = 3;
 const int cellRButton = 2;
@@ -7,6 +9,12 @@ const int lightSensor = A0;
 
 // Consts
 const int waitPeriod = 10000;
+const int RX = 1;
+const int RY = 0;
+const int LX = 0;
+const int LY = 0;
+#define address 0x8
+#define addressOut 0x9
 
 // Variables
 int brightnessR = 0;
@@ -31,6 +39,8 @@ void setup() {
   pinMode(cellLLed,OUTPUT);
   pinMode(cellLButton,OUTPUT);
   Serial.begin(9600);
+  Wire.begin(address);
+  Wire.onReceive(receiveEvent);
 }
 
 void loop() {
@@ -48,6 +58,7 @@ void loop() {
   }
 
   //EnviarComunicações()
+  sendComms();
   analogWrite(cellRLed, brightnessR);
   analogWrite(cellLLed, brightnessL);
   
@@ -101,5 +112,26 @@ void brightnessSensor()
   brightnessL = 255-(analogRead(lightSensor)/4);
   if ( brightnessL > 64 )
     brightnessL = 64;
-  //Serial.println(brightness);
+  //Serial.println(brightnessL);
+}
+
+void sendComms()
+{
+  //Serial.println("In");
+  Wire.beginTransmission(addressOut);
+  //Serial.println("MiddleIn");
+  Wire.write(true);
+  //Serial.println("MiddleOut");
+  Wire.endTransmission(); 
+  //Serial.println("Out");
+}
+
+void receiveEvent(int howMany){
+ while (Wire.available() > 0){
+   boolean b = Wire.read();
+   Serial.print("CENAAAAAAS: ");
+   Serial.println(b, DEC);
+   //digitalWrite(LED, !b);
+ }
+ Serial.println("Finish"); 
 }
