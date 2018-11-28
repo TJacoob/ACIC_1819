@@ -13,8 +13,7 @@ const int RX = 1;
 const int RY = 0;
 const int LX = 0;
 const int LY = 0;
-#define address 0x8
-#define addressOut 0x9
+int address;
 
 // Variables
 int brightnessR = 0;
@@ -39,6 +38,8 @@ void setup() {
   pinMode(cellLLed,OUTPUT);
   pinMode(cellLButton,OUTPUT);
   Serial.begin(9600);
+  address = calcAddress(RX,RY);
+  //Serial.println(address);
   Wire.begin(address);
   Wire.onReceive(receiveEvent);
 }
@@ -46,19 +47,21 @@ void setup() {
 void loop() {
   if( movementR )
   {
+    sendComms();
     if(millis()-movementDetectedR > waitPeriod)
       movementR = false;
       brightnessR = 255;
   }
   if( movementL )
   {
+    sendComms();
     if(millis()-movementDetectedL > waitPeriod)
       movementL = false;
       brightnessL = 255;
   }
 
   //EnviarComunicações()
-  sendComms();
+  //sendComms();
   analogWrite(cellRLed, brightnessR);
   analogWrite(cellLLed, brightnessL);
   
@@ -112,13 +115,20 @@ void brightnessSensor()
   brightnessL = 255-(analogRead(lightSensor)/4);
   if ( brightnessL > 64 )
     brightnessL = 64;
-  //Serial.println(brightnessL);
+  Serial.println(brightnessL);
+}
+
+int calcAddress(int x, int y)
+{
+  int mid = x/2;
+  int result = (mid*16)+y;
+  return result;
 }
 
 void sendComms()
 {
   //Serial.println("In");
-  Wire.beginTransmission(addressOut);
+  Wire.beginTransmission(address);
   //Serial.println("MiddleIn");
   Wire.write(true);
   //Serial.println("MiddleOut");
