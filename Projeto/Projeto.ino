@@ -13,7 +13,8 @@ const int RX = 1;
 const int RY = 0;
 const int LX = 0;
 const int LY = 0;
-int address;
+int address = 9;
+int addressOut = 8;
 
 // Variables
 int brightnessR = 0;
@@ -38,7 +39,9 @@ void setup() {
   pinMode(cellLLed,OUTPUT);
   pinMode(cellLButton,OUTPUT);
   Serial.begin(9600);
-  address = calcAddress(RX,RY);
+  Serial.print("Time: ");
+  Serial.println(millis());
+  //address = calcAddress(RX,RY);
   //Serial.println(address);
   Wire.begin(address);
   Wire.onReceive(receiveEvent);
@@ -47,14 +50,14 @@ void setup() {
 void loop() {
   if( movementR )
   {
-    sendComms();
+    //sendComms();
     if(millis()-movementDetectedR > waitPeriod)
       movementR = false;
       brightnessR = 255;
   }
   if( movementL )
   {
-    sendComms();
+    //sendComms();
     if(millis()-movementDetectedL > waitPeriod)
       movementL = false;
       brightnessL = 255;
@@ -66,11 +69,10 @@ void loop() {
   analogWrite(cellLLed, brightnessL);
   
   brightnessSensor();
-  //ReceberCommunicações()
+  //ReceberCommunicações();
   motionSensorR();
   motionSensorL();
-  
-  
+   
 }
 
 void motionSensorR(){
@@ -82,6 +84,7 @@ void motionSensorR(){
       brightnessR = 255;
       movementR = true;
       movementDetectedR = millis();
+      sendComms();
     }
     // Delay a little bit to avoid bouncing
     delay(50);
@@ -99,6 +102,7 @@ void motionSensorL(){
       brightnessL = 255;
       movementL = true;
       movementDetectedL = millis();
+      sendComms();
     }
     // Delay a little bit to avoid bouncing
     delay(50);
@@ -115,7 +119,7 @@ void brightnessSensor()
   brightnessL = 255-(analogRead(lightSensor)/4);
   if ( brightnessL > 64 )
     brightnessL = 64;
-  Serial.println(brightnessL);
+  //Serial.println(brightnessL);
 }
 
 int calcAddress(int x, int y)
@@ -128,9 +132,24 @@ int calcAddress(int x, int y)
 void sendComms()
 {
   //Serial.println("In");
-  Wire.beginTransmission(address);
+  Wire.beginTransmission(addressOut);
   //Serial.println("MiddleIn");
-  Wire.write(true);
+  byte destination = addressOut;
+  byte source = address;
+  byte event = 0;
+  // Time
+  uint32_t bigNum = millis();
+  byte t[4];
+   
+  t[0] = (bigNum >> 24) & 0xFF;
+  t[1] = (bigNum >> 16) & 0xFF;
+  t[2] = (bigNum >> 8) & 0xFF;
+  t[3] = bigNum & 0xFF;
+  // End Time
+  Wire.write(destination);
+  Wire.write(source);
+  Wire.write(event);
+  Wire.write(t,4);
   //Serial.println("MiddleOut");
   Wire.endTransmission(); 
   //Serial.println("Out");
@@ -138,9 +157,30 @@ void sendComms()
 
 void receiveEvent(int howMany){
  while (Wire.available() > 0){
-   boolean b = Wire.read();
-   Serial.print("CENAAAAAAS: ");
-   Serial.println(b, DEC);
+   byte destination = Wire.read();   
+   byte source = Wire.read();
+   byte event = Wire.read();
+   // Time
+   uint32_t t;
+   byte a,b,c,d;
+   a = Wire.read();
+   b = Wire.read();
+   c = Wire.read();
+   d = Wire.read();
+   
+   t = a;
+   t = (t << 8) | b;
+   t = (t << 8) | c;
+   t = (t << 8) | d;
+   // End Time
+   Serial.print("Destination: ");
+   Serial.println(destination);
+   Serial.print("Source: ");
+   Serial.println(source);
+   Serial.print("Event: ");
+   Serial.println(event);
+   Serial.print("Time: ");
+   Serial.println(t);
    //digitalWrite(LED, !b);
  }
  Serial.println("Finish"); 
