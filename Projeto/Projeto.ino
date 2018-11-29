@@ -9,12 +9,16 @@ const int lightSensor = A0;
 
 // Consts
 const int waitPeriod = 10000;
-const int RX = 1;
-const int RY = 0;
 const int LX = 0;
-const int LY = 0;
-int address = 9;
-int addressOut = 8;
+const int LY = 1;
+const int RX = LX+1;
+const int RY = LY;
+
+//int address = 9;
+//int addressOut = 8;
+#define CLOCKTIMEOUT 5000
+boolean clockSent = false;
+
 
 // Variables
 int brightnessR = 0;
@@ -25,6 +29,9 @@ boolean movementR = false;
 long movementDetectedR = 0;
 boolean movementL = false;
 long movementDetectedL = 0;
+int clockDelta = 0;
+boolean clockSetup = false;
+
 /*
 int fadeAmount = 5;
 
@@ -39,28 +46,36 @@ void setup() {
   pinMode(cellLLed,OUTPUT);
   pinMode(cellLButton,OUTPUT);
   Serial.begin(9600);
-  Serial.print("Time: ");
-  Serial.println(millis());
   //address = calcAddress(RX,RY);
   //Serial.println(address);
-  Wire.begin(address);
+  Wire.begin(calcAddress(LX,LY));
   Wire.onReceive(receiveEvent);
 }
 
 void loop() {
+  // Send Clock to Neighbors
+  if (!clockSent)
+    sendClock();
+  // If timeout, sync Clock
+  if ( millis() > CLOCKTIMEOUT && (!clockSetup) )
+    syncClock();
+  
   if( movementR )
   {
     //sendComms();
+    //sendComms(0, 0, 0, 0, 1);
+    brightnessR = 255;
     if(millis()-movementDetectedR > waitPeriod)
       movementR = false;
-      brightnessR = 255;
+      
   }
   if( movementL )
   {
     //sendComms();
+    brightnessL = 255;
     if(millis()-movementDetectedL > waitPeriod)
       movementL = false;
-      brightnessL = 255;
+      
   }
 
   //EnviarComunicações()
@@ -72,7 +87,7 @@ void loop() {
   //ReceberCommunicações();
   motionSensorR();
   motionSensorL();
-   
+  
 }
 
 void motionSensorR(){
@@ -84,7 +99,7 @@ void motionSensorR(){
       brightnessR = 255;
       movementR = true;
       movementDetectedR = millis();
-      sendComms();
+      //sendComms(0, 0, 0, 0, 1);
     }
     // Delay a little bit to avoid bouncing
     delay(50);
@@ -102,7 +117,7 @@ void motionSensorL(){
       brightnessL = 255;
       movementL = true;
       movementDetectedL = millis();
-      sendComms();
+      //sendComms();
     }
     // Delay a little bit to avoid bouncing
     delay(50);
@@ -120,68 +135,4 @@ void brightnessSensor()
   if ( brightnessL > 64 )
     brightnessL = 64;
   //Serial.println(brightnessL);
-}
-
-int calcAddress(int x, int y)
-{
-  int mid = x/2;
-  int result = (mid*16)+y;
-  return result;
-}
-
-void sendComms()
-{
-  //Serial.println("In");
-  Wire.beginTransmission(addressOut);
-  //Serial.println("MiddleIn");
-  byte destination = addressOut;
-  byte source = address;
-  byte event = 0;
-  // Time
-  uint32_t bigNum = millis();
-  byte t[4];
-   
-  t[0] = (bigNum >> 24) & 0xFF;
-  t[1] = (bigNum >> 16) & 0xFF;
-  t[2] = (bigNum >> 8) & 0xFF;
-  t[3] = bigNum & 0xFF;
-  // End Time
-  Wire.write(destination);
-  Wire.write(source);
-  Wire.write(event);
-  Wire.write(t,4);
-  //Serial.println("MiddleOut");
-  Wire.endTransmission(); 
-  //Serial.println("Out");
-}
-
-void receiveEvent(int howMany){
- while (Wire.available() > 0){
-   byte destination = Wire.read();   
-   byte source = Wire.read();
-   byte event = Wire.read();
-   // Time
-   uint32_t t;
-   byte a,b,c,d;
-   a = Wire.read();
-   b = Wire.read();
-   c = Wire.read();
-   d = Wire.read();
-   
-   t = a;
-   t = (t << 8) | b;
-   t = (t << 8) | c;
-   t = (t << 8) | d;
-   // End Time
-   Serial.print("Destination: ");
-   Serial.println(destination);
-   Serial.print("Source: ");
-   Serial.println(source);
-   Serial.print("Event: ");
-   Serial.println(event);
-   Serial.print("Time: ");
-   Serial.println(t);
-   //digitalWrite(LED, !b);
- }
- Serial.println("Finish"); 
 }
