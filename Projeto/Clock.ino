@@ -1,12 +1,17 @@
 int clocks[3];
 int clockNum = 0;
-#define CLOCKSNEEDED 3
-
+#define CLOCKSNEEDED 1
 
 void syncClock()
 {
   clockSetup = true ;
-  Serial.println("Clock Synced"); 
+  int ti = millis();
+  int delta = 0;
+  for (int i=0; i<clockNum; i++)
+    delta = delta + ((ti-clocks[clockNum])/clockNum);
+  Serial.print("Clock Synced, delta: "); 
+  Serial.println(delta);
+  clockDelta = delta;
 }
 
 void addToClocks(int t)

@@ -3,7 +3,7 @@ int addressOut;
 
 
 void receiveEvent(int howMany){
- Serial.println("ReceivedEvent"); 
+ //Serial.println("ReceivedEvent"); 
  while (Wire.available() > 0){
    byte destination = Wire.read();   
    byte source = Wire.read();
@@ -14,33 +14,33 @@ void receiveEvent(int howMany){
    a = Wire.read(); b = Wire.read(); c = Wire.read(); d = Wire.read();   
    t = a; t = (t << 8) | b; t = (t << 8) | c; t = (t << 8) | d;
    // End Time
-   Serial.print("Destination: ");Serial.println(destination);Serial.print("Source: ");Serial.println(source);
-   Serial.print("Event: ");Serial.println(event);Serial.print("Time: ");Serial.println(t);
+   Serial.print("Destination: ");Serial.print(destination);Serial.print(", Source: ");Serial.print(source);
+   Serial.print(", Event: ");Serial.print(event);Serial.print(", Time: ");Serial.println(t);
+   //Serial.print("Message Received from: "); Serial.print(source); Serial.print(" and Y: "); Serial.print(outY); Serial.print(" with event: "); Serial.println(event);
    //digitalWrite(LED, !b);
    if ( event == 0 && (!clockSetup) )
     addToClocks(t);
  }
- Serial.println("Received Message"); 
+ //Serial.println("Received Message"); 
 }
 
 void sendComms(int e, int inX, int inY, int outX, int outY)
 {
-  Serial.println("Sending Message");
   if ( outX >= 0 && outY >=0 )
   {
     addressIn = calcAddress(inX, inY);
     addressOut = calcAddress(outX, outY);
-    Serial.print("Own Address: ");
-    Serial.println(addressIn);
-    Serial.print("Out Address: ");
-    Serial.println(addressOut);
   }
   else
-  Serial.println("Invalid Addresses");
+  {
+    Serial.println("Invalid Address");
+    return;
+  }
+    
   
   Wire.beginTransmission(addressOut);
-  byte destination = addressOut;
-  byte source = addressIn;
+  byte destination = codeCoord(outX,outY);
+  byte source = codeCoord(inX,inY);
   byte event = e;
   // Time
   uint32_t bigNum = millis()-clockDelta;
@@ -57,7 +57,8 @@ void sendComms(int e, int inX, int inY, int outX, int outY)
   Wire.write(t,4);
   //Serial.println("MiddleOut");
   Wire.endTransmission(); 
-  Serial.println("Sent Message");
+  Serial.print("Message Sent to X: "); Serial.print(outX); Serial.print(" and Y: "); Serial.print(outY); Serial.print(" with event: "); Serial.println(event);
+  //Serial.print("Destination: "); Serial.println(addressOut);//Serial.print(", Source: "); Serial.println(source);
 }
 
 int calcAddress(int x, int y)
@@ -65,4 +66,14 @@ int calcAddress(int x, int y)
   int mid = x/2;
   int result = (mid*16)+y;
   return result;
+}
+
+int codeCoord(int x, int y)
+{
+  return ( y*16 ) + x;
+}
+
+int isLeftSide(int d)
+{
+  return (d%2 == 0);
 }

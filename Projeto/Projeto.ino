@@ -10,7 +10,7 @@ const int lightSensor = A0;
 // Consts
 const int waitPeriod = 10000;
 const int LX = 0;
-const int LY = 1;
+const int LY = 0;
 const int RX = LX+1;
 const int RY = LY;
 
@@ -62,8 +62,6 @@ void loop() {
   
   if( movementR )
   {
-    //sendComms();
-    //sendComms(0, 0, 0, 0, 1);
     brightnessR = 255;
     if(millis()-movementDetectedR > waitPeriod)
       movementR = false;
@@ -71,7 +69,6 @@ void loop() {
   }
   if( movementL )
   {
-    //sendComms();
     brightnessL = 255;
     if(millis()-movementDetectedL > waitPeriod)
       movementL = false;
@@ -98,8 +95,12 @@ void motionSensorR(){
     if (buttonState == HIGH) {
       brightnessR = 255;
       movementR = true;
-      movementDetectedR = millis();
-      //sendComms(0, 0, 0, 0, 1);
+      movementDetectedR = millis()-clockDelta;
+      for ( int x=-1; x<=1; x += 1 )
+      {
+        for ( int y=-1; y<=1; y += 1 )
+          sendComms(1, RX, RY, RX+x, RY+y);
+      }
     }
     // Delay a little bit to avoid bouncing
     delay(50);
@@ -116,7 +117,12 @@ void motionSensorL(){
     if (buttonState == HIGH) {
       brightnessL = 255;
       movementL = true;
-      movementDetectedL = millis();
+      movementDetectedL = millis()-clockDelta;
+      for ( int x=-1; x<=1; x += 1 )
+      {
+        for ( int y=-1; y<=1; y += 1 )
+          sendComms(1, LX, LY, LX+x, LY+y);
+      }
       //sendComms();
     }
     // Delay a little bit to avoid bouncing
