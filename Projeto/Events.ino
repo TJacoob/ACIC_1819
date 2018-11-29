@@ -1,4 +1,4 @@
-void eventFilter(int event, uint32_t t, int dest)
+void eventFilter(int event, uint32_t t, int dest, int source)
 {
   if ( event == 0 && (!clockSetup) )
   {
@@ -7,21 +7,24 @@ void eventFilter(int event, uint32_t t, int dest)
   }
   if ( event == 1 )
   {
+    Serial.println(dest);Serial.println(source);
     if( isLeftSide(dest) )
     {
-      //Serial.println("Oh yea");
-      //turnLightL = true;
-      //movementDetectedL = t;
-      movementActionL(t);
+      if ( dest == source )
+        movementActionL(t,3);
+      else
+      {
+        Serial.println("here");
+        movementActionL(t,2);
+      }
+        
     }
     else
     {
-      //Serial.println("Shiim");
-      //Serial.print("Current Time: ");
-      //Serial.println(millis()-clockDelta);
-      //Serial.print("Event Time: ");
-      //Serial.println(t);
-      movementActionR(t);
+      if ( dest == source )
+        movementActionR(t,3);
+      else
+        movementActionR(t,2);
     }
   }  
 }

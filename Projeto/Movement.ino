@@ -4,7 +4,7 @@ void motionSensorR(){
   if (buttonState != lastButtonStateR) {
     // if the state has changed, increment the counter
     if (buttonState == HIGH) {
-      movementActionR(timeNow);
+      //movementActionR(timeNow);
       sendMessage = true;
       setUpMessage(1,RX,RY, timeNow);
     }
@@ -15,9 +15,9 @@ void motionSensorR(){
   lastButtonStateR = buttonState;
 }
 
-void movementActionR(uint32_t t){
+void movementActionR(uint32_t t, int level){
   //Serial.println("Oh yea");
-  brightnessR = 255;
+  brightnessR = intensity(level);
   turnLightR = true;
   movementDetectedR = t;
 }
@@ -29,7 +29,7 @@ void motionSensorL(){
   if (buttonState != lastButtonStateL) {
     // if the state has changed, increment the counter
     if (buttonState == HIGH) {
-      movementActionL(timeNow);
+      //movementActionL(timeNow);
       sendMessage = true;
       setUpMessage(1,LX,LY, timeNow);
     }
@@ -40,9 +40,19 @@ void motionSensorL(){
   lastButtonStateL = buttonState;
 }
 
-void movementActionL(uint32_t t){
+void movementActionL(uint32_t t, int level){
   //Serial.println("Shiim");
-  brightnessL = 255;
+  brightnessL = intensity(level);
   turnLightL = true;
   movementDetectedL = t;
+}
+
+int intensity(int level)
+{
+  if ( level == 1 )
+    return 64;       // Safety
+  if ( level == 2 )
+    return 128;      // Confort
+  if ( level == 3 )
+    return 255;      // Turned On
 }

@@ -36,8 +36,8 @@ void sendComms(int outX, int outY)
     return;
 
   // Own Actions Filter
-  if ( (addressIn == addressOut) && (source != destination) )
-    eventFilter(event,timeNow,destination);
+  if ( (addressIn == addressOut))
+    eventFilter(event,timeNow,destination, source);
   
   Wire.beginTransmission(addressOut);
   // Time
@@ -95,7 +95,7 @@ void receiveEvent(int howMany){
 }
 
 void handleReceived(){
-  eventFilter(receivedEvent,receivedEventTime,receivedDestination);
+  eventFilter(receivedEvent,receivedEventTime,receivedDestination, receivedSource);
   receivedMessage = false;
 }
 

@@ -107,7 +107,7 @@ void brightnessSensor()
     turnLightR = true;
     if ( brightnessR > 64 )
       brightnessR = 64;  
-    brightnessR = 0;
+    //brightnessR = 0;
   }
   if ( !turnLightL )
   {
@@ -115,7 +115,7 @@ void brightnessSensor()
     turnLightL = true;
     if ( brightnessL > 64 )
       brightnessL = 64;  
-    brightnessL = 0;
+    //brightnessL = 0;
   }
   //Serial.println(brightnessL);
 }
