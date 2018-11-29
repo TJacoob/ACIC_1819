@@ -4,9 +4,9 @@ void motionSensorR(){
   if (buttonState != lastButtonStateR) {
     // if the state has changed, increment the counter
     if (buttonState == HIGH) {
-      movementActionR(millis());
+      movementActionR(timeNow);
       sendMessage = true;
-      setUpMessage(1,RX,RY);
+      setUpMessage(1,RX,RY, timeNow);
     }
     // Delay a little bit to avoid bouncing
     delay(50);
@@ -16,6 +16,7 @@ void motionSensorR(){
 }
 
 void movementActionR(uint32_t t){
+  //Serial.println("Oh yea");
   brightnessR = 255;
   turnLightR = true;
   movementDetectedR = t;
@@ -28,9 +29,9 @@ void motionSensorL(){
   if (buttonState != lastButtonStateL) {
     // if the state has changed, increment the counter
     if (buttonState == HIGH) {
-      movementActionL(millis());
+      movementActionL(timeNow);
       sendMessage = true;
-      setUpMessage(1,LX,LY);
+      setUpMessage(1,LX,LY, timeNow);
     }
     // Delay a little bit to avoid bouncing
     delay(50);
@@ -40,6 +41,7 @@ void motionSensorL(){
 }
 
 void movementActionL(uint32_t t){
+  //Serial.println("Shiim");
   brightnessL = 255;
   turnLightL = true;
   movementDetectedL = t;

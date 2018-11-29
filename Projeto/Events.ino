@@ -9,17 +9,19 @@ void eventFilter(int event, uint32_t t, int dest)
   {
     if( isLeftSide(dest) )
     {
+      //Serial.println("Oh yea");
       //turnLightL = true;
       //movementDetectedL = t;
-      movementActionL(millis());
+      movementActionL(t);
     }
     else
     {
+      //Serial.println("Shiim");
       //Serial.print("Current Time: ");
       //Serial.println(millis()-clockDelta);
       //Serial.print("Event Time: ");
       //Serial.println(t);
-      movementActionR(millis());
+      movementActionR(t);
     }
   }  
 }

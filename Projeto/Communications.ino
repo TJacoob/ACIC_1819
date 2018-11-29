@@ -3,14 +3,20 @@ int sourceX;
 int sourceY;
 uint32_t eventTime;
 
-void setUpMessage(int e, int inX, int inY)
+// Received Message Holding
+byte receivedDestination;   
+byte receivedSource;
+byte receivedEvent;
+uint32_t receivedEventTime;
+
+void setUpMessage(int e, int inX, int inY, uint32_t t)
 {
   //destination = codeCoord(outX,outY);
   //source = codeCoord(inX,inY);
   sourceX = inX;
   sourceY = inY;
   event = e;
-  eventTime = millis();
+  eventTime = t;
 }
 
 // Send Message to (X,Y) Cell
@@ -31,7 +37,7 @@ void sendComms(int outX, int outY)
 
   // Own Actions Filter
   if ( (addressIn == addressOut) && (source != destination) )
-    eventFilter(event,millis(),destination);
+    eventFilter(event,timeNow,destination);
   
   Wire.beginTransmission(addressOut);
   // Time
@@ -64,27 +70,34 @@ int sendToAll()
 }
 
 void receiveEvent(int howMany){
- //Serial.println("ReceivedEvent"); 
+ //Serial.println("Received Event"); 
  while (Wire.available() > 0){
-   byte destination = Wire.read();   
-   byte source = Wire.read();
-   byte event = Wire.read();
+   receivedDestination = Wire.read();   
+   receivedSource = Wire.read();
+   receivedEvent = Wire.read();
    // Time
    uint32_t t;
    byte a,b,c,d;
    a = Wire.read(); b = Wire.read(); c = Wire.read(); d = Wire.read();   
    t = a; t = (t << 8) | b; t = (t << 8) | c; t = (t << 8) | d;
+   receivedEventTime = t;
    // End Time
-   Serial.print("Destination: ");Serial.print(destination);Serial.print(", Source: ");Serial.print(source);
-   Serial.print(", Event: ");Serial.print(event);Serial.print(", Time: ");Serial.println(t);
+   Serial.print("Destination: ");Serial.print(receivedDestination);Serial.print(", Source: ");Serial.print(receivedSource);
+   Serial.print(", Event: ");Serial.print(receivedEvent);Serial.print(", Time: ");Serial.println(t);
    //Serial.print("Message Received from: "); Serial.print(source); Serial.print(" and Y: "); Serial.print(outY); Serial.print(" with event: "); Serial.println(event);
    //digitalWrite(LED, !b);
-   eventFilter(event,t,destination);
-    
+   //eventFilter(event,t,destination);
  }
- //Serial.println("Received Message"); 
+ if ( event == 0 ) 
+  handleReceived();
+ else
+  receivedMessage = true;
 }
 
+void handleReceived(){
+  eventFilter(receivedEvent,receivedEventTime,receivedDestination);
+  receivedMessage = false;
+}
 
 int calcAddress(int x, int y)
 {
