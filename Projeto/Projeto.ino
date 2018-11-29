@@ -8,9 +8,9 @@ const int cellLButton = 10;
 const int lightSensor = A0;
 
 // Consts
-const int waitPeriod = 10000;
+#define waitPeriod 3000
 const int LX = 0;
-const int LY = 0;
+const int LY = 1;
 const int RX = LX+1;
 const int RY = LY;
 
@@ -26,19 +26,15 @@ int brightnessL = 0;
 int lastButtonStateR = 0;
 int lastButtonStateL = 0;
 boolean movementR = false;
-long movementDetectedR = 0;
+long movementDetectedR = waitPeriod;
 boolean movementL = false;
-long movementDetectedL = 0;
+long movementDetectedL = waitPeriod;
 int clockDelta = 0;
 boolean clockSetup = false;
 
-/*
-int fadeAmount = 5;
-
-boolean light = true;
-
-int buttonPushCounter = 0;
-*/
+boolean turnLightR ;
+boolean turnLightL ;
+boolean sendMessage ;
 
 void setup() {
   pinMode(cellRLed,OUTPUT);
@@ -50,95 +46,60 @@ void setup() {
   //Serial.println(address);
   Wire.begin(calcAddress(LX,LY));
   Wire.onReceive(receiveEvent);
+  turnLightR = false;
+  turnLightL = false;
 }
 
-void loop() {
-  // Send Clock to Neighbors
+void loop()
+{
+   // Send Clock to Neighbors
   if (!clockSent)
     sendClock();
   // If timeout, sync Clock
-  if ( millis() > CLOCKTIMEOUT && (!clockSetup) )
+  if ( (millis()) > CLOCKTIMEOUT && (!clockSetup) )
     syncClock();
   
-  if( movementR )
-  {
-    brightnessR = 255;
-    if(millis()-movementDetectedR > waitPeriod)
-      movementR = false;
-      
-  }
-  if( movementL )
-  {
-    brightnessL = 255;
-    if(millis()-movementDetectedL > waitPeriod)
-      movementL = false;
-      
-  }
+  if( (millis())-movementDetectedR > waitPeriod)
+    turnLightR = false;
+  if( (millis())-movementDetectedL > waitPeriod)
+    turnLightL = false;
+  sendMessage = false;
 
-  //EnviarComunicações()
-  //sendComms();
-  analogWrite(cellRLed, brightnessR);
-  analogWrite(cellLLed, brightnessL);
-  
-  brightnessSensor();
-  //ReceberCommunicações();
+  brightnessSensor();  
   motionSensorR();
   motionSensorL();
-  
-}
 
-void motionSensorR(){
-  int buttonState = digitalRead(cellRButton);
-  // compare the buttonState to its previous state
-  if (buttonState != lastButtonStateR) {
-    // if the state has changed, increment the counter
-    if (buttonState == HIGH) {
-      brightnessR = 255;
-      movementR = true;
-      movementDetectedR = millis()-clockDelta;
-      for ( int x=-1; x<=1; x += 1 )
-      {
-        for ( int y=-1; y<=1; y += 1 )
-          sendComms(1, RX, RY, RX+x, RY+y);
-      }
-    }
-    // Delay a little bit to avoid bouncing
-    delay(50);
+  if ( turnLightR )
+  {
+    //brightnessR = 255;
+    analogWrite(cellRLed, brightnessR);
   }
-  // save the current state as the last state, for next time through the loop
-  lastButtonStateR = buttonState;
-}
-
-void motionSensorL(){
-  int buttonState = digitalRead(cellLButton);
-  // compare the buttonState to its previous state
-  if (buttonState != lastButtonStateL) {
-    // if the state has changed, increment the counter
-    if (buttonState == HIGH) {
-      brightnessL = 255;
-      movementL = true;
-      movementDetectedL = millis()-clockDelta;
-      for ( int x=-1; x<=1; x += 1 )
-      {
-        for ( int y=-1; y<=1; y += 1 )
-          sendComms(1, LX, LY, LX+x, LY+y);
-      }
-      //sendComms();
-    }
-    // Delay a little bit to avoid bouncing
-    delay(50);
+  if ( turnLightL )
+  {
+    //brightnessL = 255;
+    analogWrite(cellLLed, brightnessL);
   }
-  // save the current state as the last state, for next time through the loop
-  lastButtonStateL = buttonState;
+  if ( sendMessage )
+    sendToAll();
 }
 
 void brightnessSensor()
 {
-  brightnessR = 255-(analogRead(lightSensor)/4);
-  if ( brightnessR > 64 )
-    brightnessR = 64;
-  brightnessL = 255-(analogRead(lightSensor)/4);
-  if ( brightnessL > 64 )
-    brightnessL = 64;
+  if ( !turnLightR )
+  {
+    brightnessR = 255-(analogRead(lightSensor)/4);
+    turnLightR = true;
+    if ( brightnessR > 64 )
+      brightnessR = 64;  
+    //brightnessR = 0;
+  }
+  if ( !turnLightL )
+  {
+    brightnessL = 255-(analogRead(lightSensor)/4);
+    turnLightL = true;
+    if ( brightnessL > 64 )
+      brightnessL = 64;  
+    //brightnessL = 0;
+  }
   //Serial.println(brightnessL);
 }

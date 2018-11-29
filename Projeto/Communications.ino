@@ -1,6 +1,67 @@
-int addressIn;
-int addressOut;
+byte event;
+int sourceX;
+int sourceY;
+uint32_t eventTime;
 
+void setUpMessage(int e, int inX, int inY)
+{
+  //destination = codeCoord(outX,outY);
+  //source = codeCoord(inX,inY);
+  sourceX = inX;
+  sourceY = inY;
+  event = e;
+  eventTime = millis();
+}
+
+// Send Message to (X,Y) Cell
+void sendComms(int outX, int outY)
+{
+  int addressIn;
+  int addressOut;
+  byte source = codeCoord(sourceX, sourceY);
+  byte destination = codeCoord(outX, outY);
+  
+  if ( outX >= 0 && outY >=0 )
+  {
+    addressIn = calcAddress(sourceX, sourceY);
+    addressOut = calcAddress(outX, outY);
+  }
+  else
+    return;
+
+  // Own Actions Filter
+  if ( (addressIn == addressOut) && (source != destination) )
+    eventFilter(event,millis(),destination);
+  
+  Wire.beginTransmission(addressOut);
+  // Time
+  byte t[4];
+   
+  t[0] = (eventTime >> 24) & 0xFF;
+  t[1] = (eventTime >> 16) & 0xFF;
+  t[2] = (eventTime >> 8) & 0xFF;
+  t[3] = eventTime & 0xFF;
+  // End Time
+  Wire.write(destination);
+  Wire.write(source);
+  Wire.write(event);
+  Wire.write(t,4);
+  //Serial.println("MiddleOut");
+  Wire.endTransmission(); 
+  Serial.print("Message Sent to X: "); Serial.print(outX); Serial.print(" and Y: "); Serial.print(outY); Serial.print(" with event: "); Serial.println(event);
+  //Serial.print("Destination: "); Serial.println(addressOut);//Serial.print(", Source: "); Serial.println(source);
+  //delay(10);
+}
+
+// Loops every Neighbor and send the setup message
+int sendToAll()
+{
+  for ( int x=-1; x<=1; x += 1 )
+  {
+    for ( int y=-1; y<=1; y += 1 )
+      sendComms(RX+x, RY+y);
+  }
+}
 
 void receiveEvent(int howMany){
  //Serial.println("ReceivedEvent"); 
@@ -18,48 +79,12 @@ void receiveEvent(int howMany){
    Serial.print(", Event: ");Serial.print(event);Serial.print(", Time: ");Serial.println(t);
    //Serial.print("Message Received from: "); Serial.print(source); Serial.print(" and Y: "); Serial.print(outY); Serial.print(" with event: "); Serial.println(event);
    //digitalWrite(LED, !b);
-   if ( event == 0 && (!clockSetup) )
-    addToClocks(t);
+   eventFilter(event,t,destination);
+    
  }
  //Serial.println("Received Message"); 
 }
 
-void sendComms(int e, int inX, int inY, int outX, int outY)
-{
-  if ( outX >= 0 && outY >=0 )
-  {
-    addressIn = calcAddress(inX, inY);
-    addressOut = calcAddress(outX, outY);
-  }
-  else
-  {
-    Serial.println("Invalid Address");
-    return;
-  }
-    
-  
-  Wire.beginTransmission(addressOut);
-  byte destination = codeCoord(outX,outY);
-  byte source = codeCoord(inX,inY);
-  byte event = e;
-  // Time
-  uint32_t bigNum = millis()-clockDelta;
-  byte t[4];
-   
-  t[0] = (bigNum >> 24) & 0xFF;
-  t[1] = (bigNum >> 16) & 0xFF;
-  t[2] = (bigNum >> 8) & 0xFF;
-  t[3] = bigNum & 0xFF;
-  // End Time
-  Wire.write(destination);
-  Wire.write(source);
-  Wire.write(event);
-  Wire.write(t,4);
-  //Serial.println("MiddleOut");
-  Wire.endTransmission(); 
-  Serial.print("Message Sent to X: "); Serial.print(outX); Serial.print(" and Y: "); Serial.print(outY); Serial.print(" with event: "); Serial.println(event);
-  //Serial.print("Destination: "); Serial.println(addressOut);//Serial.print(", Source: "); Serial.println(source);
-}
 
 int calcAddress(int x, int y)
 {
@@ -73,7 +98,7 @@ int codeCoord(int x, int y)
   return ( y*16 ) + x;
 }
 
-int isLeftSide(int d)
+boolean isLeftSide(int d)
 {
   return (d%2 == 0);
 }

@@ -25,10 +25,10 @@ void addToClocks(int t)
 void sendClock()
 {
   // Send Clocks to cardinal Neighbors
-  sendComms(0, LX, LY, LX, LY+1);
-  sendComms(0, LX, LY, LX+1, LY);
-  sendComms(0, LX, LY, LX, LY-1);
-  sendComms(0, LX, LY, LX-1, LY);
+  setUpMessage(0, LX, LY); sendComms(LX, LY+1);
+  setUpMessage(0, LX, LY); sendComms(LX+2, LY);
+  setUpMessage(0, LX, LY); sendComms(LX, LY-1);
+  setUpMessage(0, LX, LY); sendComms(LX-1, LY);
   clockSent = true;
   Serial.println("Clocks Sent"); 
 }
