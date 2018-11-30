@@ -9,7 +9,7 @@
 
 // COORDINATES
 #define LX 0
-#define LY 1
+#define LY 0
 #define RX LX+1
 #define RY LY
 
