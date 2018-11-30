@@ -92,7 +92,11 @@ void ledLeft(int state)
 {
   int brightness;
   if ( state == 0 ) 
-    brightness = 0;
+  {
+    brightness = 255-(analogRead(lightSensor)/4);
+    if ( brightness > 64 )
+      brightness = 64;  
+  }
   else if ( state == 1 )  // Safety
     brightness = 64;
   else if ( state == 2 )  // Comfort
