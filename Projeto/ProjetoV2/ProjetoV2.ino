@@ -1,4 +1,3 @@
-#include <QueueArray.h>
 #include <Wire.h>
 
 // PINS
@@ -10,7 +9,7 @@
 
 // COORDINATES
 #define LX 0
-#define LY 0
+#define LY 1
 #define RX LX+1
 #define RY LY
 
@@ -24,6 +23,11 @@ unsigned long timeNow;
 int ledStateLeft ;
 int ledStateRight ;
 boolean messageToBeSent = false;
+boolean messageReceived = false;
+
+uint32_t clockDelta = 0;
+boolean clockSetup = false;
+boolean clockSent = false;
 
 void setup() {
   pinMode(cellRLed,OUTPUT);
@@ -31,6 +35,9 @@ void setup() {
   pinMode(cellLLed,OUTPUT);
   pinMode(cellLButton,OUTPUT);
   Serial.begin(9600);
+  
+  Wire.begin(calcAddress(LX,LY));
+  Wire.onReceive(receiveEvent);
 
   //addStateRight(1,1);
   //addStateLeft(1,1);
@@ -38,16 +45,27 @@ void setup() {
 }
 
 void loop() {
+
+  // Send Clock to Neighbors
+  if (!clockSent)
+    sendClock();
+  // If timeout, sync Clock
+  if ( (millis()) > CLOCKTIMEOUT && (!clockSetup) )
+    syncClock();
+
+
+  ledStateLeft = cellStepLeft();
+  //Serial.println(ledStateLeft);
+  ledLeft(ledStateLeft);
+
+   ledStateRight = cellStepRight();
+  //Serial.println(ledStateLeft);
+  ledRight(ledStateRight);
   
   // RIGHT
   
   motionSensorRight();
-
-  
-  ledStateRight = cellStepRight();
-  //Serial.println(ledStateLeft);
-  ledRight(ledStateRight);
-
+    
   if ( messageToBeSent )
   {
     for ( int x=-1; x<=1; x++)
@@ -58,13 +76,6 @@ void loop() {
 
     // LEFT
   motionSensorLeft();
-  
-
-  // Ler Mensagens();
-
-  ledStateLeft = cellStepLeft();
-  //Serial.println(ledStateLeft);
-  ledLeft(ledStateLeft);
 
   if ( messageToBeSent )
   {
@@ -73,6 +84,15 @@ void loop() {
         sendMessage(LX+x,LY+y);
     messageToBeSent = false;
   } 
+
+  if ( messageReceived ){
+    handleReceived();
+    messageReceived = false;
+  }
+
+ 
+
+  delay(50);
   
   
   //Serial.println(millis());

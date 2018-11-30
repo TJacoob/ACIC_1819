@@ -4,58 +4,66 @@ void API(int event, int destination, int source, unsigned long t)
   int destY = decodeCoordY(destination);
   int sourceX = decodeCoordX(source);
   int sourceY = decodeCoordY(source);
-  Serial.println(event);
-  Serial.println(t);
+  Serial.print("API CALL, Event: ");Serial.print(event);
+  Serial.print(", Time: "); Serial.println(t);
   Serial.print("DestX: ");Serial.println(destX);
   Serial.print("DestY: ");Serial.println(destY);
   Serial.print("SourceX: ");Serial.println(sourceX);
   Serial.print("SourceY: ");Serial.println(sourceY);
   
-  if ( destX == sourceX && destY == sourceY ) // Own Message
+  // Esquerda
+  if ( destX % 2 == 0 )
   {
-    //Serial.println("Own Message");
-    if ( event == 1 )
+    if ( sourceX == LX && sourceY == LY ) // Fui eu
     {
-      if ( destX%2 == 0 )
+      if ( event == 0 )
+        return;
+      if ( event == 1 )
       {
         addStateLeft(3,t);
-        //Serial.print(" ");
-        Serial.println("A");
-        //printBufferLeft();
-      }
-      else
-      {
-        addStateRight(3,t);
-        Serial.println("B");
-        //printBufferRight();
+        return; 
       }
     }
-  }
-  else if ( (abs(sourceX-destX)<=1) && (abs(sourceY-destY)<=1) ) // Same Arduino
-  {
-    //Serial.println("Message to same Arduino Neighbour");
-    //Serial.println("espaço2");
-    //Serial.println(event);
-    if ( event == 1 )
+    else  // Foi outro
     {
-      if ( destX%2 == 0 )
+      if ( event == 0 )
+      {
+        addToClocks(t);
+        Serial.println("Clock Received");
+        return;
+      }
+      if ( event == 1 )
       {
         addStateLeft(2,t);
-        //Serial.print(" ");
-        Serial.println("C");
-        printBufferLeft();
+        return;
       }
-      else
-      {
-        addStateRight(2,t);
-        Serial.print("Here");
-        //printBufferRight();
-        Serial.println("D");
-      }
-        
     }
   }
-  
-  // If destination even -> L
-  // If destination odd -> R
+  else  // Direita
+  {
+    if ( sourceX == RX && sourceY == RY ) // Fui eu
+    {
+      if ( event == 0 )
+        return;
+      if ( event == 1 )
+      {
+        addStateRight(3,t);
+        return;
+      }
+    }
+    else  // Foi outro
+    {
+      if ( event == 0 )
+      {
+        addToClocks(t);
+        Serial.println("Clock Received");
+        return;
+      }
+      if ( event == 1 )
+      {
+        addStateRight(2,t);
+        return;
+      }
+    }
+  }
 }

@@ -1,44 +1,34 @@
-byte eventOut;
-byte sourceOut;
-byte destinationOut;
-unsigned long eventTimeOut;
+byte eventIn;
+byte sourceIn;
+byte destinationIn;
+unsigned long eventTimeIn;
 
-// Public Function
-void spreadMovement(int inX, int inY, unsigned long t)
-{
-  messageToBeSent = true;
-  eventOut = 1;
-  sourceOut = codeCoord(inX, inY);
-  eventTimeOut = t;
+void receiveEvent(int howMany){
+ //Serial.println("Received Event"); 
+ while (Wire.available() > 0){
+   destinationIn = Wire.read();   
+   sourceIn = Wire.read();
+   eventIn = Wire.read();
+   // Time
+   uint32_t t;
+   byte a,b,c,d;
+   a = Wire.read(); b = Wire.read(); c = Wire.read(); d = Wire.read();   
+   t = a; t = (t << 8) | b; t = (t << 8) | c; t = (t << 8) | d;
+   eventTimeIn = t;
+   // End Time
+   //Serial.print("Destination: ");Serial.print(destinationIn);Serial.print(", Source: ");Serial.print(sourceIn);
+   //Serial.print(", Event: ");Serial.print(eventIn);Serial.print(", Time: ");Serial.println(eventTimeIn);
+   //Serial.print("Message Received from: "); Serial.print(source); Serial.print(" and Y: "); Serial.print(outY); Serial.print(" with event: "); Serial.println(event);
+   //digitalWrite(LED, !b);
+   //eventFilter(event,t,destination);
+ }
+ Serial.println("Message Received");
+ if ( eventIn == 0 ) 
+  handleReceived();
+ else
+  messageReceived = true;
 }
 
-void sendMessage(int outX, int outY)
-{
-  int ownAddress = calcAddress(LX, LY);
-  destinationOut = codeCoord(outX, outY);
-  if ( outX >= 0 && outY >= 0 )
-  {
-    int addressOut = calcAddress(outX,outY);
-    if ( ownAddress == addressOut )
-      API(eventOut, destinationOut, sourceOut, eventTimeOut);
-    else
-    {
-    }
-  }
-  // Wires()
-}
-
-// Auxiliary Function
-int codeCoord(int x, int y)
-{
-  return ( y*16 ) + x;
-}
-
-
-
-int calcAddress(int x, int y)
-{
-  int mid = x/2;
-  int result = (mid*16)+y;
-  return result;
+void handleReceived(){
+  API(eventIn, destinationIn, sourceIn, eventTimeIn);
 }
