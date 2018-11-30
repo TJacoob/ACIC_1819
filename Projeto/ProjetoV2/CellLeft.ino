@@ -21,7 +21,7 @@ int cellStepLeft()
 void addStateLeft(int state, unsigned long t)   // Adds element to the first free spot of the array
 {
   int pos = 0;
-  if ( state > statesLeft[0] )
+  if ( state >= statesLeft[0] )
   {
     pullArrayLeft();
     statesLeft[0] = state;

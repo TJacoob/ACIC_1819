@@ -1,3 +1,4 @@
+#include <QueueArray.h>
 #include <Wire.h>
 
 // PINS
@@ -30,13 +31,14 @@ void setup() {
   pinMode(cellLLed,OUTPUT);
   pinMode(cellLButton,OUTPUT);
   Serial.begin(9600);
-  
-  //addState(0,millis());
+
+  //addStateRight(1,1);
+  //addStateLeft(1,1);
   //printBufferLeft();
 }
 
 void loop() {
-
+  
   // RIGHT
   
   motionSensorRight();
@@ -46,8 +48,15 @@ void loop() {
   //Serial.println(ledStateLeft);
   ledRight(ledStateRight);
 
-  
-  // LEFT
+  if ( messageToBeSent )
+  {
+    for ( int x=-1; x<=1; x++)
+      for ( int y=-1; y<=1; y++)
+        sendMessage(RX+x,RY+y);
+    messageToBeSent = false;
+  } 
+
+    // LEFT
   motionSensorLeft();
   
 
@@ -64,7 +73,7 @@ void loop() {
         sendMessage(LX+x,LY+y);
     messageToBeSent = false;
   } 
-
+  
   
   //Serial.println(millis());
   timeNow = millis();

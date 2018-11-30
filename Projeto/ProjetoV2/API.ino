@@ -6,14 +6,29 @@ void API(int event, int destination, int source, unsigned long t)
   int sourceY = decodeCoordY(source);
   Serial.println(event);
   Serial.println(t);
+  Serial.print("DestX: ");Serial.println(destX);
+  Serial.print("DestY: ");Serial.println(destY);
+  Serial.print("SourceX: ");Serial.println(sourceX);
+  Serial.print("SourceY: ");Serial.println(sourceY);
+  
   if ( destX == sourceX && destY == sourceY ) // Own Message
   {
     //Serial.println("Own Message");
     if ( event == 1 )
     {
       if ( destX%2 == 0 )
+      {
         addStateLeft(3,t);
         //Serial.print(" ");
+        Serial.println("A");
+        //printBufferLeft();
+      }
+      else
+      {
+        addStateRight(3,t);
+        Serial.println("B");
+        //printBufferRight();
+      }
     }
   }
   else if ( (abs(sourceX-destX)<=1) && (abs(sourceY-destY)<=1) ) // Same Arduino
@@ -24,12 +39,18 @@ void API(int event, int destination, int source, unsigned long t)
     if ( event == 1 )
     {
       if ( destX%2 == 0 )
+      {
         addStateLeft(2,t);
         //Serial.print(" ");
+        Serial.println("C");
+        printBufferLeft();
+      }
       else
       {
         addStateRight(2,t);
-        //Serial.print(" ");
+        Serial.print("Here");
+        //printBufferRight();
+        Serial.println("D");
       }
         
     }

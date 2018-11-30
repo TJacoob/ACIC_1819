@@ -8,19 +8,13 @@ int lastButtonStateR = 0;
 int cellStepRight()
 {
   if ( timesRight[0] == 0 && timesRight[1] != 0 )
-  {
     return statesRight[0];
-  }
   if ( timesRight[0] == 0 )
     return 0;
-  if( (timeNow-timesRight[0])<WAITPERIOD )
-  { // Ainda não passou o tempo
-    return statesRight[0];
-  }
-  else
-  { // Já passou o tempo
+  if( (timeNow-timesRight[0])>WAITPERIOD )
     stepArrayRight();
-  }
+  else
+    return statesRight[0]; 
 }
 
 // Public Function, add a state to the Right cell array
@@ -51,6 +45,8 @@ void addStateRight(int state, unsigned long t)   // Adds element to the first fr
 
 // Private Function, rearranges the array (Shift Right)
 void stepArrayRight(){
+  //Serial.println("Shift Right");
+  //printBufferRight();
   for ( int x = 0; x < STATEBUFFERSIZE-1 ; x++ ) // Pulls remaining objects to one behind
     statesRight[x] = statesRight[x+1];   
   for ( int x = 0; x < STATEBUFFERSIZE-1 ; x++ ) // Pulls remaining objects to one behind
@@ -64,6 +60,7 @@ void pullArrayRight(){
     statesRight[x] = statesRight[x-1];   
   for ( int x = STATEBUFFERSIZE; x > 0 ; x-- ) // Pulls remaining objects to one behind
     timesRight[x] = timesRight[x-1];
+  //Serial.println("Shift Right");
   
 }
 
@@ -83,7 +80,7 @@ void motionSensorRight(){
   if (buttonState != lastButtonStateR) {
     if (buttonState == HIGH) {
       // Send Message to Everyone
-      spreadMovement(RX,RY,timeNow);
+      spreadMovement(RX,RY, timeNow);
     }
     delay(50);
   }
