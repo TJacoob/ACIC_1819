@@ -10,7 +10,7 @@ const int lightSensor = A0;
 // Consts
 #define waitPeriod 6000
 const int LX = 0;
-const int LY = 0;
+const int LY = 1;
 const int RX = LX+1;
 const int RY = LY;
 
